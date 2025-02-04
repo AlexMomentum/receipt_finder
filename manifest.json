@@ -1,0 +1,30 @@
+{
+    "name": "Receipt Finder",
+    "description": "Labels Gmail emails in a specified date range with a user-defined label.",
+    "version": "1.0",
+    "manifest_version": 3,
+    "permissions": [
+        "identity",
+        "identity.email"
+    ],
+    "oauth2": {
+      "client_id": "989655282764-odcmonm6iaab94d4f28lai0el93kumjc.apps.googleusercontent.com",
+      "scopes": [
+        "https://www.googleapis.com/auth/gmail.modify"
+      ]
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    },
+    "host_permissions": [
+        "https://gmail.googleapis.com/*",
+        "https://www.googleapis.com/*",
+        "https://*.googleusercontent.com/*"
+    ]
+}
