@@ -76,35 +76,40 @@ submitLicenseBtn.addEventListener("click", async () => {
   submitLicenseBtn.addEventListener("click", async () => {
     const licenseKey = licenseKeyInput.value.trim();
     if (!licenseKey) {
-      updateStatus("Please enter a license key.", false);
-      return;
+        updateStatus("Please enter a license key.", false);
+        return;
     }
 
-    updateStatus("Verifying license...", true);
+    updateStatus("Fetching your email...", true);
 
     try {
-      const response = await fetch("https://receipt-finder.onrender.com/validate-key", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ key: licenseKey })
-      });
+        const userEmail = await getUserEmail();
+        console.log("User Email Detected:", userEmail);
 
-      const data = await response.json();
+        const response = await fetch("https://receipt-finder.onrender.com/validate-key", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email: userEmail, key: licenseKey }) // ✅ FIXED: Sending email
+        });
 
-      if (data.valid) {
-        localStorage.setItem("licenseKey", licenseKey); // Save key
-        labelBtn.disabled = false; // Enable button
-        updateStatus("License verified! You can now use the extension.", true);
-      } else {
-        updateStatus("Invalid license key. Please try again.", false);
-      }
+        const data = await response.json();
+        console.log("License verification response:", data);
+
+        if (data.valid) {
+            localStorage.setItem("licenseKey", licenseKey); // Save key
+            labelBtn.disabled = false; // Enable button
+            updateStatus("License verified! You can now use the extension.", true);
+        } else {
+            updateStatus("Invalid license key. Please try again.", false);
+        }
     } catch (error) {
-      console.error("License verification failed:", error);
-      updateStatus("Error verifying license. Please try again later.", false);
+        console.error("License verification failed:", error);
+        updateStatus("Error verifying license. Please try again later.", false);
     }
-  });
+});
+
 
   // Email labeling function
   labelBtn.addEventListener("click", async () => {
