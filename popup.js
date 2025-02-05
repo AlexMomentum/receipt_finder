@@ -1,37 +1,34 @@
 async function getUserEmail() {
   return new Promise((resolve, reject) => {
-      chrome.identity.getAuthToken({ interactive: true }, function(token) {
-          if (chrome.runtime.lastError) {
-              console.error("Failed to get auth token:", chrome.runtime.lastError);
-              reject("Failed to get auth token.");
-              return;
-          }
+    chrome.identity.getAuthToken({ interactive: true }, function (token) {
+      if (chrome.runtime.lastError) {
+        console.error("Failed to get auth token:", chrome.runtime.lastError);
+        reject("Failed to get auth token.");
+        return;
+      }
 
-          fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
-              headers: { Authorization: `Bearer ${token}` }
-          })
-          .then(res => res.json())
-          .then(user => {
-              if (user.email) {
-                  console.log("✅ User Email Detected:", user.email);
-                  resolve(user.email);
-              } else {
-                  console.error("❌ No email found in response:", user);
-                  reject("No email found in response.");
-              }
-          })
-          .catch(err => {
-              console.error("Error fetching user info:", err);
-              reject("Error fetching user info.");
-          });
-      });
+      fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((user) => {
+          if (user.email) {
+            console.log("✅ User Email Detected:", user.email);
+            resolve(user.email);
+          } else {
+            console.error("❌ No email found in response:", user);
+            reject("No email found.");
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching user info:", err);
+          reject("Error fetching user info.");
+        });
+    });
   });
 }
 
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const labelNameInput = document.getElementById("labelName");
   const startDateInput = document.getElementById("startDate");
   const endDateInput = document.getElementById("endDate");
@@ -40,98 +37,62 @@ document.addEventListener("DOMContentLoaded", () => {
   const licenseKeyInput = document.getElementById("licenseKey");
   const submitLicenseBtn = document.getElementById("submitLicense");
 
+  let userEmail = null;
 
-  getUserEmail().then((userEmail) => {
+  try {
+    userEmail = await getUserEmail();
     console.log("✅ Detected User Email:", userEmail);
-  }).catch((error) => {
+  } catch (error) {
     console.error("❌ Failed to get user email:", error);
     updateStatus("Error fetching your email. Please log into Chrome.", false);
-  });
-
-
-submitLicenseBtn.addEventListener("click", async () => {
-    const licenseKey = licenseKeyInput.value.trim();
-    if (!licenseKey) {
-        updateStatus("Please enter a license key.", false);
-        return;
-    }
-
-    updateStatus("Fetching your email...", true);
-
-    try {
-        const userEmail = await getUserEmail();
-        console.log("User Email Detected:", userEmail);
-
-        const response = await fetch("https://receipt-finder.onrender.com/validate-key", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ email: userEmail, key: licenseKey }) // Send email dynamically
-        });
-
-        const data = await response.json();
-        console.log("License verification response:", data);
-
-        if (data.valid) {
-            localStorage.setItem("licenseKey", licenseKey); // Save key
-            labelBtn.disabled = false; // Enable button
-            updateStatus("License verified! You can now use the extension.", true);
-        } else {
-            updateStatus("Invalid license key. Please try again.", false);
-        }
-    } catch (error) {
-        console.error("License verification failed:", error);
-        updateStatus("Error verifying license. Please try again later.", false);
-    }
-});
-
-  // Check if the user has already verified their license
-  const savedKey = localStorage.getItem("licenseKey");
-  if (savedKey) {
-    verifyLicense(savedKey); // Automatically verify on load
+    return;
   }
 
-  // License verification
+  // 🔹 Check if the user has a saved & verified license key
+  const savedKey = localStorage.getItem("licenseKey");
+  if (savedKey) {
+    await verifyLicense(savedKey, userEmail); // Auto-verify license on load
+  }
+
   submitLicenseBtn.addEventListener("click", async () => {
     const licenseKey = licenseKeyInput.value.trim();
     if (!licenseKey) {
-        updateStatus("Please enter a license key.", false);
-        return;
+      updateStatus("Please enter a license key.", false);
+      return;
     }
 
-    updateStatus("Fetching your email...", true);
+    updateStatus("Verifying license...", true);
+    await verifyLicense(licenseKey, userEmail);
+  });
 
+  async function verifyLicense(key, email) {
     try {
-        const userEmail = await getUserEmail();
-        console.log("User Email Detected:", userEmail);
+      const response = await fetch("https://receipt-finder.onrender.com/validate-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, key }), // ✅ Always send user email
+      });
 
-        const response = await fetch("https://receipt-finder.onrender.com/validate-key", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ email: userEmail, key: licenseKey }) // ✅ FIXED: Sending email
-        });
+      const data = await response.json();
+      console.log("License verification response:", data);
 
-        const data = await response.json();
-        console.log("License verification response:", data);
+      if (data.valid) {
+        localStorage.setItem("licenseKey", key); // Save key
+        labelBtn.disabled = false; // Enable button
+        updateStatus("✅ License verified! You can now use the extension.", true);
 
-        if (data.valid) {
-            localStorage.setItem("licenseKey", licenseKey); // Save key
-            labelBtn.disabled = false; // Enable button
-            updateStatus("License verified! You can now use the extension.", true);
-        } else {
-            updateStatus("Invalid license key. Please try again.", false);
-        }
+        // 🔹 Hide the license key input section
+        licenseKeyInput.style.display = "none";
+        submitLicenseBtn.style.display = "none";
+      } else {
+        updateStatus("❌ Invalid license key. Please try again.", false);
+      }
     } catch (error) {
-        console.error("License verification failed:", error);
-        updateStatus("Error verifying license. Please try again later.", false);
+      console.error("License verification failed:", error);
+      updateStatus("Error verifying license. Please try again later.", false);
     }
-});
+  }
 
-
-  // Email labeling function
   labelBtn.addEventListener("click", async () => {
     const labelName = labelNameInput.value.trim();
     const startDate = startDateInput.value.trim();
@@ -146,12 +107,7 @@ submitLicenseBtn.addEventListener("click", async () => {
     updateStatus("Labeling in progress... Please wait.", true);
 
     chrome.runtime.sendMessage(
-      {
-        action: "labelEmails",
-        labelName,
-        startDate,
-        endDate
-      },
+      { action: "labelEmails", labelName, startDate, endDate },
       (response) => {
         labelBtn.disabled = false;
 
@@ -163,7 +119,7 @@ submitLicenseBtn.addEventListener("click", async () => {
         if (response && response.success) {
           updateStatus(response.message, true);
         } else {
-          updateStatus(`Error: ${response ? response.message : 'Unknown error'}`, false);
+          updateStatus(`Error: ${response ? response.message : "Unknown error"}`, false);
         }
       }
     );
@@ -172,28 +128,5 @@ submitLicenseBtn.addEventListener("click", async () => {
   function updateStatus(msg, isSuccess) {
     statusDiv.textContent = msg;
     statusDiv.className = isSuccess ? "status success" : "status error";
-  }
-
-  async function verifyLicense(key) {
-    try {
-      const response = await fetch("https://receipt-finder.onrender.com/validate-key", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ key })
-      });
-
-      const data = await response.json();
-      if (data.valid) {
-        labelBtn.disabled = false; // Enable button
-        updateStatus("License verified! You can now use the extension.", true);
-      } else {
-        updateStatus("Invalid license key. Please enter a valid key.", false);
-      }
-    } catch (error) {
-      console.error("License check failed:", error);
-      updateStatus("Error verifying license. Try again later.", false);
-    }
   }
 });
