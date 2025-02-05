@@ -1,3 +1,16 @@
+async function getUserEmail() {
+  return new Promise((resolve, reject) => {
+      chrome.identity.getProfileUserInfo((userInfo) => {
+          if (userInfo.email) {
+              resolve(userInfo.email);
+          } else {
+              reject("No email found.");
+          }
+      });
+  });
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
   const labelNameInput = document.getElementById("labelName");
   const startDateInput = document.getElementById("startDate");
@@ -7,19 +20,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const licenseKeyInput = document.getElementById("licenseKey");
   const submitLicenseBtn = document.getElementById("submitLicense");
 
-  
-  
-  async function getUserEmail() {
-    return new Promise((resolve, reject) => {
-        chrome.identity.getProfileUserInfo((userInfo) => {
-            if (userInfo.email) {
-                resolve(userInfo.email);
-            } else {
-                reject("No email found.");
-            }
-        });
-    });
-}
+
+  getUserEmail().then((userEmail) => {
+    console.log("✅ Detected User Email:", userEmail);
+  }).catch((error) => {
+    console.error("❌ Failed to get user email:", error);
+    updateStatus("Error fetching your email. Please log into Chrome.", false);
+  });
+
 
 submitLicenseBtn.addEventListener("click", async () => {
     const licenseKey = licenseKeyInput.value.trim();
