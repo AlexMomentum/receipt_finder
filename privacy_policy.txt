@@ -1,0 +1,40 @@
+Privacy Policy
+
+Last Updated: 1/30/2025
+
+Thank you for using Recipt Finder (the “Extension”). This Privacy Policy describes how and when the Extension collects, uses, and shares information when you install or use it in your Google Chrome browser.
+1. What Data We Access
+
+    Gmail Data: To help you label and organize receipts in your Gmail inbox, the Extension requests access to:
+        The subject lines, snippet text, and other metadata of your Gmail messages to determine which ones are likely receipts.
+        Permission to apply or create labels (“Receipts,” etc.) within your Gmail account.
+
+2. How We Use This Data
+
+    Local Analysis: The Extension processes your emails locally in your browser. This means the analysis to detect receipt-related emails takes place on your own device.
+    Label Application: Once potential receipt emails are identified, the Extension applies (or creates) a Gmail label (e.g., “Receipts 2023”).
+    No External Storage: We do not transmit or store the contents of your emails on external servers. All message scanning is done in-memory (locally), and data is never shared with third parties.
+
+3. Data Sharing & Disclosure
+
+    No Sharing: We do not sell, rent, or otherwise disclose any Gmail data to third parties.
+    No External Transmission: The Extension does not send your email content or personal data to any server under our control or to third-party services.
+
+4. Security & Scope Management
+
+    OAuth Scope: The Extension uses the Chrome Identity API and Google OAuth to gain the https://www.googleapis.com/auth/gmail.modify scope. This scope allows us to:
+        Read email metadata (like subject and snippet) to identify receipts.
+        Modify labels on your emails.
+    Token Handling: The access token is managed by Google Chrome’s identity framework and is stored locally (if at all) according to Chrome’s internal mechanisms. We do not store or see your OAuth token on external servers.
+    Revoke Access: You can revoke the Extension’s access to your Gmail at any time through your Google Account Security settings or by removing the Extension from Chrome.
+
+5. Children’s Privacy
+
+The Extension is not directed to individuals under the age of 13, and we do not knowingly collect personal information from children under 13. If you become aware that a child has provided us with personal information without parental consent, please contact us so we can remove it.
+6. Changes to This Policy
+
+We may update this Privacy Policy from time to time. Any significant changes will be posted or otherwise communicated through the Extension’s listing or release notes. Your continued use of the Extension after any changes constitutes acceptance of those changes.
+7. Contact Us
+
+If you have any questions or concerns about this Privacy Policy or our data practices, please contact us at:
+momentumtechnologydesign@gmail.com
