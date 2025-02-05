@@ -67,31 +67,34 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function verifyLicense(key, email) {
     try {
-      const response = await fetch("https://receipt-finder.onrender.com/validate-key", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, key }), // ✅ Always send user email
-      });
+        const response = await fetch("https://receipt-finder.onrender.com/validate-key", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, key }), // ✅ Always send user email
+        });
 
-      const data = await response.json();
-      console.log("License verification response:", data);
+        const data = await response.json();
+        console.log("License verification response:", data);
 
-      if (data.valid) {
-        localStorage.setItem("licenseKey", key); // Save key
-        labelBtn.disabled = false; // Enable button
-        updateStatus("✅ License verified! You can now use the extension.", true);
+        if (data.valid) {
+            localStorage.setItem("licenseKey", key); // Save key
+            labelBtn.disabled = false; // Enable button
+            updateStatus("✅ License verified! You can now use the extension.", true);
 
-        // 🔹 Hide the license key input section
-        licenseKeyInput.style.display = "none";
-        submitLicenseBtn.style.display = "none";
-      } else {
-        updateStatus("❌ Invalid license key. Please try again.", false);
-      }
+            // 🔹 Hide the entire license key section
+            const licenseSection = document.getElementById("licenseSection"); // Add an ID to the wrapper div
+            if (licenseSection) {
+                licenseSection.style.display = "none";
+            }
+        } else {
+            updateStatus("❌ Invalid license key. Please try again.", false);
+        }
     } catch (error) {
-      console.error("License verification failed:", error);
-      updateStatus("Error verifying license. Please try again later.", false);
+        console.error("License verification failed:", error);
+        updateStatus("Error verifying license. Please try again later.", false);
     }
-  }
+}
+
 
   labelBtn.addEventListener("click", async () => {
     const labelName = labelNameInput.value.trim();
