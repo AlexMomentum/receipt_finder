@@ -4,11 +4,12 @@ async function getUserEmail() {
           if (userInfo.email) {
               resolve(userInfo.email);
           } else {
-              reject("No email found.");
+              reject("Chrome is not providing an email. Please check your Google account settings.");
           }
       });
   });
 }
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
