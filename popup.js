@@ -1,14 +1,33 @@
 async function getUserEmail() {
   return new Promise((resolve, reject) => {
-      chrome.identity.getProfileUserInfo((userInfo) => {
-          if (userInfo.email) {
-              resolve(userInfo.email);
-          } else {
-              reject("Chrome is not providing an email. Please check your Google account settings.");
+      chrome.identity.getAuthToken({ interactive: true }, function(token) {
+          if (chrome.runtime.lastError) {
+              console.error("Failed to get auth token:", chrome.runtime.lastError);
+              reject("Failed to get auth token.");
+              return;
           }
+
+          fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+              headers: { Authorization: `Bearer ${token}` }
+          })
+          .then(res => res.json())
+          .then(user => {
+              if (user.email) {
+                  console.log("✅ User Email Detected:", user.email);
+                  resolve(user.email);
+              } else {
+                  console.error("❌ No email found in response:", user);
+                  reject("No email found in response.");
+              }
+          })
+          .catch(err => {
+              console.error("Error fetching user info:", err);
+              reject("Error fetching user info.");
+          });
       });
   });
 }
+
 
 
 
