@@ -5,8 +5,7 @@
   "manifest_version": 3,
   "permissions": [
       "identity",
-      "identity.email",
-      "storage"
+      "identity.email"
   ],
   "oauth2": {
     "client_id": "989655282764-odcmonm6iaab94d4f28lai0el93kumjc.apps.googleusercontent.com",
